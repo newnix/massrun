@@ -44,6 +44,7 @@ import ( "flag" )
 var authkey string
 var custArgs string
 var dbg bool
+var conffile string
 var help bool
 var internal bool
 var logfile string
@@ -52,11 +53,16 @@ var readlist string
 var script string
 var user string
 
+// Read config file key/value style
+func readconfig(file string) {
+}
+
 // Flag setting/usage generation
 func init() {
 	flag.StringVar(&authkey, "k", "", "`keyfile` to use for ssh authentication")
 	flag.StringVar(&custArgs, "A", "", "`arguments` to pass for the script being run, will override other flags")
 	flag.BoolVar(&dbg, "d", false, "Print out some debugging information")
+	flag.StringVar(&conffile, "", "`file` to use for authentication data")
 	flag.BoolVar(&help, "h", false, "This help message")
 	flag.BoolVar(&internal, "i", false, "Toggle the use of internal command handling [not yet supported]")
 	flag.StringVar(&logfile, "l", "", "`file` to write logging data to")
@@ -70,5 +76,8 @@ func main() {
 	flag.Parse()
 	if flag.NFlag() == 0 || help {
 		flag.Usage()
+	}
+	if conffile != "" {
+		readconfig(conffile)
 	}
 }
