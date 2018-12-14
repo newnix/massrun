@@ -38,8 +38,12 @@
 // as well as generate backups of their configurations.
 package main;
 
-//import ( "fmt"; "flag"; "sync"; "strconv"; "os/exec" )
-import ( "flag" )
+import ( 
+	"flag";
+	"fmt";
+	"io/ioutil";
+	"strings";
+)
 
 var authkey string
 var custArgs string
@@ -54,7 +58,55 @@ var script string
 var user string
 
 // Read config file key/value style
-func readconfig(file string) {
+func readconfig(file string) error {
+	conf, err := ioutil.ReadFile(file); if err != nil {
+		return(err)
+	}
+
+	// Split up the config data into a bunch of strings
+	confstr := strings.Split(string(conf), "\n")
+
+	if (dbg) {
+		fmt.Println("Read:")
+		fmt.Println(confstr)
+	}
+
+	for i := 0; i < len(confstr) - 1; i++ {
+		option := strings.Split(confstr[i], "=")
+		switch option[0] {
+		case "keyfile":
+			authkey = option[1]
+		case "argv_override":
+			custArgs = option[1]
+		case "debug":
+			if option[1] == "true" {
+				dbg = true
+			} else {
+				dbg = false
+			}
+		case "internal":
+			if option[1] == "true" {
+				internal = true
+			} else {
+				internal = false
+			}
+		case "logfile":
+			logfile = option[1]
+		case "password":
+			password = option[1]
+		case "list":
+			readlist = option[1]
+		case "script":
+			script = option[1]
+		case "user":
+			script = option[1]
+		default:
+			// ignore invalid entries
+			;
+		}
+	}
+	// Default, unknown values are ignored
+	return(nil)
 }
 
 // Flag setting/usage generation
@@ -62,7 +114,7 @@ func init() {
 	flag.StringVar(&authkey, "k", "", "`keyfile` to use for ssh authentication")
 	flag.StringVar(&custArgs, "A", "", "`arguments` to pass for the script being run, will override other flags")
 	flag.BoolVar(&dbg, "d", false, "Print out some debugging information")
-	flag.StringVar(&conffile, "", "`file` to use for authentication data")
+	flag.StringVar(&conffile,"f", "", "`file` to use for authentication data")
 	flag.BoolVar(&help, "h", false, "This help message")
 	flag.BoolVar(&internal, "i", false, "Toggle the use of internal command handling [not yet supported]")
 	flag.StringVar(&logfile, "l", "", "`file` to write logging data to")
