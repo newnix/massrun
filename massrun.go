@@ -46,6 +46,7 @@ import (
 )
 
 var authkey string
+var batchsize int
 var custArgs string
 var dbg bool
 var conffile string
@@ -56,6 +57,9 @@ var password string
 var readlist string
 var script string
 var user string
+
+type Rundata struct {
+}
 
 // Read config file key/value style
 func readconfig(file string) error {
@@ -102,7 +106,10 @@ func readconfig(file string) error {
 			script = option[1]
 		default:
 			// ignore invalid entries
-			;
+			// Print out unknown values if runtime debugging is enabled
+			if (dbg) {
+				fmt.Printf("%s: unknown value\n", option[0])
+			}
 		}
 	}
 	// Default, unknown values are ignored
@@ -113,6 +120,7 @@ func readconfig(file string) error {
 func init() {
 	flag.StringVar(&authkey, "k", "", "`keyfile` to use for ssh authentication")
 	flag.StringVar(&custArgs, "A", "", "`arguments` to pass for the script being run, will override other flags")
+	flag.IntVar(&batchsize, "B", 32, "`number` of devices to connect to concurrently")
 	flag.BoolVar(&dbg, "d", false, "Print out some debugging information")
 	flag.StringVar(&conffile,"f", "", "`file` to use for authentication data")
 	flag.BoolVar(&help, "h", false, "This help message")
@@ -124,11 +132,16 @@ func init() {
 	flag.StringVar(&user, "su", "", "`user` account to use when connecting to remote hosts/devices")
 }
 
+func extrun(Rundata *ExecData) {
+}
+
 func main() {
 	flag.Parse()
 	if flag.NFlag() == 0 || help {
 		flag.Usage()
 	}
+	// Read the configs from a file if specified, otherwise use defaluts
+	// and/or values givine on the command line
 	if conffile != "" {
 		readconfig(conffile)
 	}
